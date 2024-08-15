@@ -1,0 +1,16 @@
+@keyframes carMove {
+    0% {
+      transform: translateX(-400px);
+    }
+    50% {
+      transform: translateX(400px);
+    }
+    100% {
+      transform: translateX(-400px);
+    }
+  }
+  
+  .animate-car {
+    animation: carMove 5s infinite;
+  }
+  
