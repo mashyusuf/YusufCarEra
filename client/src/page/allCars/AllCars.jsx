@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import { useSpring, animated } from '@react-spring/web';
 import Select from 'react-select';
 import { IoMdArrowDropdown } from 'react-icons/io';
-
+import Slider from '@mui/material/Slider'; // Import from MUI
 // Custom styles for react-select
 const customStyles = {
     option: (provided) => ({
@@ -60,18 +60,42 @@ const AllCars = () => {
     const [infoIconClicked, setInfoIconClicked] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedBrand, setSelectedBrand] = useState('');
+    const [priceRange, setPriceRange] = useState([0, 100000]); // Default price range
+    const [sortOption, setSortOption] = useState(''); // State for selected sort option
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(9);
     const axiosCommon = useAxiosCommon();
 
-    const { data: allCars = [], refetch, isLoading, error } = useQuery({
-        queryKey: ['cars', selectedCategory, selectedBrand],
+    const { data, refetch, isLoading, error } = useQuery({
+        queryKey: [
+            'cars',
+            selectedCategory,
+            selectedBrand,
+            priceRange,
+            sortOption,
+            currentPage,
+            itemsPerPage,
+        ],
         queryFn: async () => {
             const res = await axiosCommon.get('/cars', {
-                params: { category: selectedCategory, brandName: selectedBrand } // Ensure brandName is used
+                params: {
+                    category: selectedCategory,
+                    brandName: selectedBrand,
+                    minPrice: priceRange[0],
+                    maxPrice: priceRange[1],
+                    sort: sortOption,
+                    page: currentPage,
+                    limit: itemsPerPage,
+                },
             });
-            return res.data;
+            return res.data; // Ensure the structure returned here has 'cars'
         },
+        keepPreviousData: true, 
         refetchOnWindowFocus: false,
     });
+    
+    const cars = data?.cars || [];
+    
 
     const handleCategoryClick = (category) => {
         setSelectedCategory(category);
@@ -91,6 +115,27 @@ const AllCars = () => {
 
     const handleInfoIconClick = (carId) => {
         setInfoIconClicked(prev => (prev === carId ? null : carId));
+    };
+    
+    const handlePriceRangeChange = (event, newValue) => {
+        setPriceRange(newValue);
+    };
+
+    const handlePriceRangeCommit = () => {
+        refetch();
+    };
+    const handleSortChange = (event) => {
+        setSortOption(event.target.value);
+        refetch(); // Refetch data with the new sorting option
+    };
+    
+    const totalPages = data?.totalPages || 1; // Total pages from the response, ensure your API returns this
+
+    const handlePageChange = (page) => {
+        if (page > 0 && page <= totalPages) {
+            setCurrentPage(page);
+            refetch(); // Trigger refetch when page changes
+        }
     };
 
     if (isLoading) return (
@@ -121,26 +166,70 @@ const AllCars = () => {
                 </div>
             </div>
 
-            <div className="mb-8 flex justify-evenly bg-gray-100 p-4 rounded-lg shadow-md">
-                <h1>hie Yoooo</h1>
-                <Select
-                    value={options.find(option => option.value === selectedBrand)}
-                    onChange={handleBrandChange}
-                    options={options}
-                    styles={customStyles}
-                    components={{ DropdownIndicator: () => <IoMdArrowDropdown /> }}
-                    formatOptionLabel={({ label, icon }) => (
-                        <div className="flex items-center">
-                            {icon && <span className="mr-2 text-blue-500">{icon}</span>}
-                            {label}
-                        </div>
-                    )}
-                    placeholder="Select Your Brand"
-                />
-            </div>
+            <div className="mb-8 grid space-x-10 space-y-2 bg-gray-100 p-4 rounded-lg shadow-md sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:justify-center lg:justify-center">
+    <div className="flex flex-col items-center">
+        <span className="text-gray-700 font-semibold">Price Range: ${priceRange[0]} - ${priceRange[1]}</span>
+        <Slider
+            value={priceRange}
+            onChange={handlePriceRangeChange}
+            onChangeCommitted={handlePriceRangeCommit}
+            valueLabelDisplay="auto"
+            min={0}
+            max={500000}
+            step={1000}
+            className="w-64"
+        />
+    </div>
+    <div className="flex flex-col justify-between items-center">
+        <div className="w-full"> 
+            <select
+                value={sortOption}
+                onChange={handleSortChange}
+                className="mt-1 block w-full p-3 px-4 border border-gray-300 rounded-md" 
+            >
+                <option value="">Filter Your Price And Show New Cars</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="date-desc">Date Added: Newest First</option>
+            </select>
+        </div>
+    </div>
+    <div className="flex flex-col justify-between items-center">
+        <Select
+            value={options.find(option => option.value === selectedBrand)}
+            onChange={handleBrandChange}
+            options={options}
+            styles={{
+                ...customStyles,
+                control: (provided) => ({
+                    ...provided,
+                    padding: '0.5rem',
+                    paddingLeft: '2.5rem',
+                    paddingRight: '2.5rem',
+                    width: '100%',
+                    minWidth: '300px',
+                }),
+                menu: (provided) => ({
+                    ...provided,
+                    padding: '0.5rem',
+                }),
+            }}
+            components={{ DropdownIndicator: () => <IoMdArrowDropdown /> }}
+            formatOptionLabel={({ label, icon }) => (
+                <div className="flex items-center">
+                    {icon && <span className="mr-2 text-blue-500">{icon}</span>}
+                    {label}
+                </div>
+            )}
+            placeholder="Select Your Brand"
+        />
+    </div>
+</div>
+
+
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {allCars.map(car => (
+                {cars.map(car => (
                     <animated.div
                         key={car._id}
                         style={springProps}
@@ -192,6 +281,32 @@ const AllCars = () => {
                         )}
                     </animated.div>
                 ))}
+            </div>
+            {/* Pagination Controls */}
+            <div className="flex justify-center mt-8">
+                <button
+                    className="px-4 py-2 mx-1 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                >
+                    &lt;
+                </button>
+                {[...Array(totalPages).keys()].map((_, index) => (
+                    <button
+                        key={index + 1}
+                        className={`px-4 py-2 mx-1 ${currentPage === index + 1 ? 'bg-orange-500 text-white' : 'text-gray-700 bg-white'} border border-gray-300 rounded-md hover:bg-gray-100`}
+                        onClick={() => handlePageChange(index + 1)}
+                    >
+                        {index + 1}
+                    </button>
+                ))}
+                <button
+                    className="px-4 py-2 mx-1 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                >
+                    &gt;
+                </button>
             </div>
         </div>
     );

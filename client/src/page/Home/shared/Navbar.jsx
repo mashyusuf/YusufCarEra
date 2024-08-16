@@ -30,9 +30,9 @@ const Navbar = () => {
   }, [isOpen]);
 
   return (
-    <div className='fixed w-full bg-white z-50  shadow-sm mx-auto '>
-      <div className='py-4 border-b-[1px]'>
-        <div className='flex items-center justify-between'>
+    <div className='fixed w-full bg-white z-50 shadow-sm'>
+      <div className='py-4 border-b-[1px] mx-auto max-w-7xl'>
+        <div className='flex items-center justify-between mx-4 lg:mx-auto'>
           {/* Logo */}
           <Link to='/'>
             <img
@@ -48,7 +48,7 @@ const Navbar = () => {
           <div className='relative flex-1 flex justify-center'>
             {/* Animated Car Icon */}
             <div className='relative'>
-              <GiF1Car className='text-blue-500 text-6xl animate-car' />
+              <GiF1Car className='text-blue-500 text-4xl lg:text-6xl animate-car' />
             </div>
           </div>
 
@@ -89,8 +89,6 @@ const Navbar = () => {
             </div>
           </div>
         </div>
-
-        {/* Sell Your Car Here Button */}
       </div>
 
       {/* Search Modal */}
@@ -117,7 +115,7 @@ const Navbar = () => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div ref={dropdownRef} className='absolute rounded-xl shadow-md w-[60vw] md:w-[20vw] bg-white overflow-hidden right-0 top-12 text-sm'>
+        <div ref={dropdownRef} className='absolute rounded-xl shadow-md w-[60vw] md:w-[40vw] lg:w-[20vw] bg-white overflow-hidden right-0 top-12 text-sm'>
           <div className='flex flex-col cursor-pointer'>
             <Link
               to='/'

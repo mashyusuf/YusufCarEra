@@ -82,26 +82,57 @@ async function run() {
       }
     });
 
+    //Get All Cars From Database-------
     app.get('/cars', async (req, res) => {
-      const { category, brandName } = req.query;
+      const { category, brandName, minPrice, maxPrice, sort, page = 1, limit = 10 } = req.query;
+  
+      let query = {};
+      
+      if (category && category !== 'All') {
+          query.category = category;
+      }
+      
+      if (brandName) {
+          query.brandName = brandName;
+      }
+      
+      if (minPrice && maxPrice) {
+          query.price = {
+              $gte: Number(minPrice),
+              $lte: Number(maxPrice),
+          };
+      }
+      
+      let sortQuery = {};
+      
+      if (sort === 'price-asc') {
+          sortQuery.price = 1; // Ascending order for price
+      } else if (sort === 'price-desc') {
+          sortQuery.price = -1; // Descending order for price
+      } else if (sort === 'date-desc') {
+          sortQuery.createdAt = -1; // Descending order for date added (Newest first)
+      }
       
       try {
-          const query = {};
-          if (category) {
-              query.category = category;
-          }
-          if (brandName) {
-              query.brandName = brandName; // Ensure brandName is used here
-          }
-  
-          const result = await allCarsCollection.find(query).toArray();
-          res.send(result);
+          const skip = (Number(page) - 1) * Number(limit);
+          const totalCars = await allCarsCollection.countDocuments(query);
+          const cars = await allCarsCollection.find(query)
+              .sort(sortQuery)
+              .skip(skip)
+              .limit(Number(limit))
+              .toArray();
+          
+          res.json({
+              totalCars,
+              currentPage: Number(page),
+              totalPages: Math.ceil(totalCars / Number(limit)),
+              cars,
+          });
       } catch (error) {
-          console.error(error);
-          res.status(500).send('Failed to fetch cars');
+          console.error('Error fetching cars:', error); // Log error for debugging
+          res.status(500).json({ error: 'Failed to fetch cars' });
       }
   });
-  
   
     
 
