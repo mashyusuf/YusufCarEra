@@ -30,7 +30,7 @@ const Navbar = () => {
   }, [isOpen]);
 
   return (
-    <div className='fixed w-full bg-white z-10 shadow-sm mx-auto'>
+    <div className='fixed w-full bg-white z-50  shadow-sm mx-auto '>
       <div className='py-4 border-b-[1px]'>
         <div className='flex items-center justify-between'>
           {/* Logo */}

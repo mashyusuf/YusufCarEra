@@ -80,7 +80,7 @@ const Banner = () => {
                 {slides.map((slide, index) => (
                     <div key={index} className="relative">
                         <div 
-                            className="w-full h-[500px] bg-cover bg-center rounded-lg shadow-2xl relative"
+                            className="w-full h-[500px] bg-cover bg-center rounded-lg shadow-2xl"
                             style={{ backgroundImage: `url(${slide.src})` }}
                         >
                             <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-blue-200 bg-blue-900 bg-opacity-50 p-8 rounded-lg">
@@ -96,12 +96,12 @@ const Banner = () => {
             </Slider>
 
             {/* Announcement */}
-            <div className="absolute top-0 left-0 right-0 mx-auto w-full bg-gradient-to-r from-blue-500 to-orange-500 py-4 text-center text-white">
-                <p className="text-xl font-bold animate-pulse flex items-center justify-center gap-10"><GiCargoShip className='text-black' />   Stay Tuned! More Discounts Coming Soon! <GiSupersonicArrow className='text-red-600' /></p>
+            <div className="absolute top-0 left-0 right-0 mx-auto w-full bg-gradient-to-r from-blue-500 to-orange-500 py-4 text-center text-white z-10">
+                <p className="text-xl font-bold text-black animate-pulse flex items-center justify-center gap-10"><GiCargoShip className='text-zinc-50' />   Stay Tuned! More Discounts Coming Soon! <GiSupersonicArrow className='text-red-600' /></p>
             </div>
 
             {/* Static Cards Section */}
-            <div className="absolute top-[85%] left-0 right-0 mx-auto w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8 z-10">
+            <div className="relative w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-16 z-10 px-4">
                 <div className="bg-white p-6 rounded-lg shadow-lg text-center hover:bg-blue-50 transition-colors duration-300">
                     <GiMoneyStack className="text-4xl text-orange-500 mb-4 mx-auto" />
                     <h3 className="text-xl font-bold mb-2 text-blue-600">Best Price Guarantee</h3>

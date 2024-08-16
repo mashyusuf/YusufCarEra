@@ -37,7 +37,7 @@ const verifyToken = async (req, res, next) => {
 
 // MongoDB connection
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ziugtg4.mongodb.net/YusufCarEra?retryWrites=true&w=majority`;
-console.log(`MongoDB URI: ${uri}`);
+
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -49,11 +49,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
-    console.log('Connected to MongoDB successfully');
-    
-    const db = client.db('YusufCarEra');  // Use your new database name
-    const carsCollection = db.collection('car');  // Use your new collection name
+    const allCarsCollection = client.db('yusufCarEra').collection('allCars');
 
     // Auth-related API
     app.post('/jwt', async (req, res) => {
@@ -86,15 +82,28 @@ async function run() {
       }
     });
 
-    // Get all cars from DB
     app.get('/cars', async (req, res) => {
-      const category = req.query.category;
-      console.log(category);
-      let query = {};
-      if (category && category !== 'null') query = { category };
-      const result = await carsCollection.find(query).toArray();
-      res.send(result);
-    });
+      const { category, brandName } = req.query;
+      
+      try {
+          const query = {};
+          if (category) {
+              query.category = category;
+          }
+          if (brandName) {
+              query.brandName = brandName; // Ensure brandName is used here
+          }
+  
+          const result = await allCarsCollection.find(query).toArray();
+          res.send(result);
+      } catch (error) {
+          console.error(error);
+          res.status(500).send('Failed to fetch cars');
+      }
+  });
+  
+  
+    
 
     // Send a ping to confirm a successful connection
     await client.db('admin').command({ ping: 1 });
