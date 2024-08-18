@@ -11,9 +11,9 @@ import {
   signOut,
   updateProfile,
 } from 'firebase/auth'
-
-import axios from 'axios'
 import { app } from '../firebase/firebase.config'
+import axios from 'axios'
+
 export const AuthContext = createContext(null)
 const auth = getAuth(app)
 const googleProvider = new GoogleAuthProvider()
@@ -56,6 +56,7 @@ const AuthProvider = ({ children }) => {
       photoURL: photo,
     })
   }
+
   // Get token from server
   const getToken = async email => {
     const { data } = await axios.post(
@@ -66,28 +67,18 @@ const AuthProvider = ({ children }) => {
     return data
   }
 
-  //------Save a User ----
-  const saveUser = async user =>{
-    const currentUser = {
-      email : user?.email,
-      role: 'user',
-      status: 'Verified',
-    }
-    const {data} = await axios.put(`${import.meta.env.VITE_API_URL}/user`, currentUser)
-    return data
-  }
-
   // onAuthStateChange
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, currentUser => {
       setUser(currentUser)
       if (currentUser) {
         getToken(currentUser.email)
-        saveUser(currentUser)
       }
       setLoading(false)
     })
-    return unsubscribe
+    return () => {
+      return unsubscribe()
+    }
   }, [])
 
   const authInfo = {
@@ -108,8 +99,11 @@ const AuthProvider = ({ children }) => {
 }
 
 AuthProvider.propTypes = {
-  // Single React element or array of React elements.
-  children: PropTypes.node,
+  // Accepts either a single child element (object) or an array of child elements.
+  children: PropTypes.oneOfType([
+    PropTypes.arrayOf(PropTypes.node),
+    PropTypes.node,
+  ]).isRequired,
 }
 
 export default AuthProvider

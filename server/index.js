@@ -5,6 +5,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 const port = process.env.PORT || 7000;
 
@@ -50,6 +51,8 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const allCarsCollection = client.db('yusufCarEra').collection('allCars');
+    const CartsCollection = client.db('yusufCarEra').collection('carts');
+    const carBuyCollection = client.db('yusufCarEra').collection('buy');
 
     // Auth-related API
     app.post('/jwt', async (req, res) => {
@@ -82,63 +85,142 @@ async function run() {
       }
     });
 
-    //Get All Cars From Database-------
-    app.get('/cars', async (req, res) => {
-      const { category, brandName, minPrice, maxPrice, sort, page = 1, limit = 10 } = req.query;
+    // Get All Cars From Database-------
+app.get('/cars', async (req, res) => {
+  const { category, brandName, minPrice, maxPrice, sort, page = 1, limit = 10, query } = req.query;
+
+  let dbQuery = {};
+
+  if (query) {
+    dbQuery.productName = { $regex: query, $options: 'i' }; // Case-insensitive search
+  }
+
+  if (category && category !== 'All') {
+    dbQuery.category = category;
+  }
+
+  if (brandName) {
+    dbQuery.brandName = brandName;
+  }
+
+  if (minPrice && maxPrice) {
+    dbQuery.price = {
+      $gte: Number(minPrice),
+      $lte: Number(maxPrice),
+    };
+  }
+
+  let sortQuery = {};
+
+  if (sort === 'price-asc') {
+    sortQuery.price = 1; // Ascending order for price
+  } else if (sort === 'price-desc') {
+    sortQuery.price = -1; // Descending order for price
+  } else if (sort === 'date-desc') {
+    sortQuery.creationDate = -1; // Descending order for date added (Newest first)
+  }
+
+  try {
+    const skip = (Number(page) - 1) * Number(limit);
+    const totalCars = await allCarsCollection.countDocuments(dbQuery);
+    const cars = await allCarsCollection.find(dbQuery)
+      .sort(sortQuery)
+      .skip(skip)
+      .limit(Number(limit))
+      .toArray();
+
+    res.json({
+      totalCars,
+      currentPage: Number(page),
+      totalPages: Math.ceil(totalCars / Number(limit)),
+      cars,
+    });
+  } catch (error) {
+    console.error('Error fetching cars:', error); // Log error for debugging
+    res.status(500).json({ error: 'Failed to fetch cars' });
+  }
+});
+
+// Only User Can see his add to cart
+app.get('/carts', async (req, res) => {
+  const email = req.query.email;
   
-      let query = {};
-      
-      if (category && category !== 'All') {
-          query.category = category;
-      }
-      
-      if (brandName) {
-          query.brandName = brandName;
-      }
-      
-      if (minPrice && maxPrice) {
-          query.price = {
-              $gte: Number(minPrice),
-              $lte: Number(maxPrice),
-          };
-      }
-      
-      let sortQuery = {};
-      
-      if (sort === 'price-asc') {
-          sortQuery.price = 1; // Ascending order for price
-      } else if (sort === 'price-desc') {
-          sortQuery.price = -1; // Descending order for price
-      } else if (sort === 'date-desc') {
-          sortQuery.createdAt = -1; // Descending order for date added (Newest first)
-      }
-      
-      try {
-          const skip = (Number(page) - 1) * Number(limit);
-          const totalCars = await allCarsCollection.countDocuments(query);
-          const cars = await allCarsCollection.find(query)
-              .sort(sortQuery)
-              .skip(skip)
-              .limit(Number(limit))
-              .toArray();
-          
-          res.json({
-              totalCars,
-              currentPage: Number(page),
-              totalPages: Math.ceil(totalCars / Number(limit)),
-              cars,
-          });
-      } catch (error) {
-          console.error('Error fetching cars:', error); // Log error for debugging
-          res.status(500).json({ error: 'Failed to fetch cars' });
-      }
-  });
+  if (!email) {
+    return res.status(400).send({ message: "Email query parameter is required" });
+  }
+
+  const result = await CartsCollection.find({ email }).toArray();
+  res.send(result);
+});
+
+//Cart delte --
+app.delete('/carts/:id', verifyToken,async (req, res) => {
+  const id = req.params.id;
+  const result = await CartsCollection.deleteOne({ _id: new ObjectId(id) });
+
+  if (result.deletedCount === 1) {
+      res.status(200).send({ message: 'Successfully deleted the cart item.' });
+  } else {
+      res.status(404).send({ message: 'Item not found.' });
+  }
+});
+
+
+//Carts Collections -----
+app.post(`/carts`, verifyToken,async (req,res)=>{
+  const cartItem = req.body;
+  const result = await CartsCollection.insertOne(cartItem);
+  res.send(result
+
+  )
+})
+//User car buy Collections -----
+app.post(`/buy`, async (req,res)=>{
+  const cartItem = req.body;
+  const result = await carBuyCollection.insertOne(cartItem);
+  res.send(result
+
+  )
+})
+
+// My buying car booking
+app.get('/myPurchase/:email', verifyToken,async (req, res) => {
+  try {
+      const result = await carBuyCollection.find({ email: req.params.email }).toArray();
+      res.send(result);
+  } catch (error) {
+      console.error('Error fetching purchases:', error);
+      res.status(500).send({ message: 'Internal Server Error' });
+  }
+});
+
+
+//Payment time------------>
+
+ // create-payment-intent
+ app.post('/create-payment-intent', verifyToken, async (req, res) => {
+  const price = req.body.price
+  const priceInCent = parseFloat(price) * 100
+  if (!price || priceInCent < 1) return
+  // generate clientSecret
+  const { client_secret } = await stripe.paymentIntents.create({
+    amount: priceInCent,
+    currency: 'usd',
+    // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+    automatic_payment_methods: {
+      enabled: true,
+    },
+  })
+  // send client secret as response
+  res.send({ clientSecret: client_secret })
+})
+
   
     
 
     // Send a ping to confirm a successful connection
-    await client.db('admin').command({ ping: 1 });
-    console.log('Pinged your deployment. You successfully connected to MongoDB!');
+    //await client.db('admin').command({ ping: 1 });
+    //console.log('Pinged your deployment. You successfully connected to MongoDB!');
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);
   } finally {

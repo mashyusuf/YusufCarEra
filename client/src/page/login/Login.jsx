@@ -10,7 +10,8 @@ import image from '../../assets/login.gif'; // Background image
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location?.state || '/';
+  const form = location.state?.form?.pathname || '/';
+  console.log('state is okey',location.state)
   const { signInWithGoogle, signIn, loading, setLoading, resetPassword } = useAuth();
   const [email, setEmail] = useState('');
 

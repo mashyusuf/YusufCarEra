@@ -8,6 +8,12 @@ import { useSpring, animated } from '@react-spring/web';
 import Select from 'react-select';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import Slider from '@mui/material/Slider'; // Import from MUI
+
+import Swal from 'sweetalert2'
+import useAxiosSecure from '../../hooks/useAxiosSecure'
+import { useLocation, useNavigate } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
+import useCart from '../../hooks/useCart';
 // Custom styles for react-select
 const customStyles = {
     option: (provided) => ({
@@ -60,13 +66,18 @@ const AllCars = () => {
     const [infoIconClicked, setInfoIconClicked] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedBrand, setSelectedBrand] = useState('');
-    const [priceRange, setPriceRange] = useState([0, 100000]); // Default price range
+    const [priceRange, setPriceRange] = useState([0, 500000]); // Default price range
     const [sortOption, setSortOption] = useState(''); // State for selected sort option
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(9);
     const axiosCommon = useAxiosCommon();
+    const location = useLocation()
+    const navigate = useNavigate()
+    const axiosSecure = useAxiosSecure()
+    const {user} = useAuth()
+    const [, refetch] = useCart()
 
-    const { data, refetch, isLoading, error } = useQuery({
+    const { data,  isLoading, error } = useQuery({
         queryKey: [
             'cars',
             selectedCategory,
@@ -138,6 +149,54 @@ const AllCars = () => {
         }
     };
 
+    //Cart post Start Now -----
+    const handleAddToCart = (product) => {
+        if (user && user.email) {
+            // Prepare the cart item object with all relevant details
+            const cartItem = {
+                email: user?.email,
+                productId: product._id,
+                productName: product.productName,
+                brandName: product.brandName,
+                productImage: product.productImage,
+                description: product.description,
+                price: product.price,
+                category: product.category,
+                ratings: product.ratings,
+                creationDate: product.creationDate,
+                discount: product.discount, // Include the discount object
+                quantity: 1 // Default quantity, can be changed later
+            };
+    
+            axiosSecure.post('/carts', cartItem).then(res => {
+                if (res.data.insertedId) {
+                    Swal.fire({
+                        position: "center",
+                        icon: "success",
+                        title: `${product.productName} Added To Cart`,
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    refetch();
+                }
+            });
+        } else {
+            Swal.fire({
+                title: "You Are Not Logged In",
+                text: "Please Login To Add To The Cart?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, Login Now!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigate('/login', { state: { from: location } });
+                }
+            });
+        }
+    };
+
     if (isLoading) return (
         <div className="flex items-center justify-center min-h-screen">
             <span className="loading loading-ring loading-lg" style={{ width: '6rem', height: '6rem' }}></span>
@@ -154,7 +213,7 @@ const AllCars = () => {
 
             <div className="mb-8 bg-gray-100 p-4 rounded-lg shadow-md">
                 <div className="flex flex-wrap gap-2 justify-center ">
-                    {['All', 'Luxury', 'Family Car', 'SUV', 'Compact Car', 'Sports Car', 'Electric Car', 'Truck', 'Sedan'].map(category => (
+                {['All', 'Luxury', 'Family Car', 'SUV', 'Compact Car', 'Sports Car', 'Electric Car', 'Truck', 'Sedan'].map(category => (
                         <a
                             key={category}
                             className={`tab ${selectedCategory === category ? 'tab-active' : 'text-gray-700'} flex items-center justify-center px-4 rounded-lg transition-colors ${selectedCategory === category ? `bg-${getColorForCategory(category)} text-black font-semibold` : 'bg-gray-200 hover:bg-gray-300'}`}
@@ -260,7 +319,9 @@ const AllCars = () => {
                             {car.description.split(' ').slice(0, 10).join(' ')}...
                         </p>
                         <div className="flex items-center justify-between">
-                            <button className="bg-blue-500 text-white py-2 px-4 rounded flex items-center hover:bg-blue-600 transition">
+                            <button 
+                            onClick={()=> handleAddToCart(car)}
+                             className="bg-blue-500 text-white py-2 px-4 rounded flex items-center hover:bg-blue-600 transition">
                                 <AiOutlineShoppingCart className="mr-2" />
                                 Add to Cart
                             </button>
@@ -275,7 +336,7 @@ const AllCars = () => {
                         </div>
                         {infoIconClicked === car._id && (
                             <div className="mt-4 p-4 bg-gray-100 rounded-md">
-                                <h3 className="text-lg font-semibold mb-2">More Information</h3>
+                                <h3 className="text-lg font-semibold mb-2">{car.description}</h3>
                                 <p className="text-gray-700">{car.additionalInfo}</p>
                             </div>
                         )}
