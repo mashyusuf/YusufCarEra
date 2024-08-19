@@ -4,7 +4,7 @@ import { IoCarSportSharp } from "react-icons/io5";
 import { SlCalender } from "react-icons/sl";
 import useAuth from '../../hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
-
+import { Helmet } from 'react-helmet';
 const MyPurchase = () => {
     const axiosSecure = useAxiosSecure();
     const { user } = useAuth();
@@ -21,7 +21,10 @@ const MyPurchase = () => {
     if (error) return <div>Error: {error.message}</div>;
 
     return (
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4"> 
+         <Helmet>
+                <title>Yusuf Car Era | My Purchase</title>
+            </Helmet>
             <h2 className="text-3xl font-bold my-4 text-center">My Purchases</h2>
             <table className="table-auto w-full text-xl">
                 <thead className="bg-gray-200">

@@ -127,6 +127,10 @@ const Navbar = () => {
               Home
             </Link>
             <div className='border-t border-gray-200'></div>
+            <Link to='/myPurchase' className='block px-4 py-3 hover:bg-neutral-100 transition font-semibold flex items-center gap-2'>
+              <FaCar className='text-blue-500' />
+              My Purchasing Car
+            </Link>
             <Link to='/' className='block px-4 py-3 hover:bg-neutral-100 transition font-semibold flex items-center gap-2'>
               <FaCar className='text-blue-500' />
               You Can Sell Your Car Here!

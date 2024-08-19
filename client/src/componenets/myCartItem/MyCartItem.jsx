@@ -6,6 +6,7 @@ import useAxiosSecure from '../../hooks/useAxiosSecure';
 import {loadStripe} from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js'
 import CheckoutForm from '../form/CheckOutFrom';
+import { Helmet } from 'react-helmet';
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const MyCartItem = () => {
     const [cart, setCart,refetch] = useCart();
@@ -59,7 +60,10 @@ const MyCartItem = () => {
     };
 
     return (
-        <div className="container mx-auto p-4">
+        <div className="container mx-auto p-4"> 
+        <Helmet>
+                <title>Yusuf Car Era | Your Cart Items</title>
+            </Helmet>
             <h1 className="text-3xl font-bold text-center mb-6 text-sky-600">Yusuf Car Era - Your Cart</h1>
             <div className="flex justify-around items-center mb-6">
                 <h2 className="text-xl font-semibold mb-4">Total Cars: {cart.length}</h2>

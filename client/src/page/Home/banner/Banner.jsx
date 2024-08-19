@@ -1,5 +1,6 @@
 import React from 'react';
 import Slider from 'react-slick';
+import { Helmet } from 'react-helmet';
 import { GiAutoRepair, GiCarDoor, GiCargoShip, GiF1Car, GiMoneyStack, GiSupersonicArrow, GiZebraShield } from "react-icons/gi";
 // Import your images
 import car from '../../../assets/car1.gif';
@@ -75,6 +76,9 @@ const Banner = () => {
 
     return (
         <div className="relative w-full max-w-7xl mx-auto py-12 mb-10">
+             <Helmet>
+                <title>Yusuf Car Era | Car's World</title>
+            </Helmet>
             {/* Carousel */}
             <Slider {...settings}>
                 {slides.map((slide, index) => (

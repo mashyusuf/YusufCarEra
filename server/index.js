@@ -11,7 +11,9 @@ const port = process.env.PORT || 7000;
 
 // Middleware
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: ['http://localhost:5173', 'http://localhost:5174',
+    'https://yusuf-car-era.web.app', 
+    'https://yusuf-car-era.firebaseapp.com'],
   credentials: true,
   optionSuccessStatus: 200,
 };
@@ -154,7 +156,7 @@ app.get('/carts', async (req, res) => {
 });
 
 //Cart delte --
-app.delete('/carts/:id', verifyToken,async (req, res) => {
+app.delete('/carts/:id', async (req, res) => {
   const id = req.params.id;
   const result = await CartsCollection.deleteOne({ _id: new ObjectId(id) });
 
@@ -167,7 +169,7 @@ app.delete('/carts/:id', verifyToken,async (req, res) => {
 
 
 //Carts Collections -----
-app.post(`/carts`, verifyToken,async (req,res)=>{
+app.post(`/carts`, async (req,res)=>{
   const cartItem = req.body;
   const result = await CartsCollection.insertOne(cartItem);
   res.send(result
