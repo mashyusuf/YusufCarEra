@@ -40,7 +40,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className='fixed w-full bg-white z-50 shadow-sm'>
+    <div className='fixed w-full bg-rose-100 z-50 shadow-sm'>
       <div className='py-4 border-b-[1px] mx-auto max-w-7xl'>
         <div className='flex items-center justify-between mx-4 lg:mx-auto'>
           {/* Logo */}

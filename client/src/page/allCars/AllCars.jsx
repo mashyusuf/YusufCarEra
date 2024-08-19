@@ -225,8 +225,8 @@ const AllCars = () => {
                 </div>
             </div>
 
-            <div className="mb-8 grid space-x-10 space-y-2 bg-gray-100 p-4 rounded-lg shadow-md sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:justify-center lg:justify-center">
-    <div className="flex flex-col items-center">
+            <div className="mb-8 grid bg-gray-100 p-4 rounded-lg shadow-md  sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:justify-center lg:justify-center justify-items-center">
+    <div className="flex flex-col items-center w-full">
         <span className="text-gray-700 font-semibold">Price Range: ${priceRange[0]} - ${priceRange[1]}</span>
         <Slider
             value={priceRange}
@@ -236,10 +236,10 @@ const AllCars = () => {
             min={0}
             max={500000}
             step={1000}
-            className="w-64"
+            className="w-full sm:w-64"
         />
     </div>
-    <div className="flex flex-col justify-between items-center">
+    <div className="flex flex-col lg:ml-20 justify-between items-center w-full">
         <div className="w-full"> 
             <select
                 value={sortOption}
@@ -253,7 +253,7 @@ const AllCars = () => {
             </select>
         </div>
     </div>
-    <div className="flex flex-col justify-between items-center">
+    <div className="flex flex-col justify-between items-center w-full">
         <Select
             value={options.find(option => option.value === selectedBrand)}
             onChange={handleBrandChange}
@@ -281,9 +281,11 @@ const AllCars = () => {
                 </div>
             )}
             placeholder="Select Your Brand"
+            className="w-full sm:w-64"
         />
     </div>
 </div>
+
 
 
 
