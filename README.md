@@ -35,7 +35,7 @@ Implement comprehensive error handling and validation mechanisms to ensure data 
 Testing and Quality Assurance:
 
 Conduct thorough testing of all functionalities, including categories, search, payment, sorting, and filtering. Perform both manual and automated tests to ensure reliability and address any bugs or issues.
-
+Welcome to YUSUF CAR ERA, your premier online destination for buying and selling cars. Our website offers a comprehensive platform designed to streamline the car buying process and provide an exceptional user experience.
 Features
 1. Setup and Basic Structure
 MERN Stack: MongoDB, Express.js, React.js, Node.js.
