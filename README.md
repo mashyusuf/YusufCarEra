@@ -1,6 +1,9 @@
 Yusuf Car Era
 Yusuf Car Era is a full-stack e-commerce website for buying and selling cars, built using the MERN stack (MongoDB, Express.js, React.js, Node.js). This project features robust functionalities including pagination, search, categorization, and sorting of products, providing users with an efficient and user-friendly experience.
 Live Link   : https://yusuf-car-era.web.app/
+
+i use in this project : 
+Tailwind CSS 🎨 React ⚛️ HTML 🌐 JavaScript 💻 MongoDB 🍃 Express 🚂 This project aims to provide a seamless and user-friendly experience for customers looking to purchase livestock online.
 Features
 1. Setup and Basic Structure
 MERN Stack: MongoDB, Express.js, React.js, Node.js.
@@ -50,3 +53,10 @@ Visit http://localhost:7000 to access the website.
 Use the search bar to find products by name.
 Apply filters and sort options to refine your search.
 Navigate between pages using the pagination controls.
+
+
+
+
+
+
+
